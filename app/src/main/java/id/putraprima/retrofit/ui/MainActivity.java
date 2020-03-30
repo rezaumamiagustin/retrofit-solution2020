@@ -22,9 +22,12 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 public class MainActivity extends AppCompatActivity {
+
     Button loginButton, registerButton;
     EditText edtEmail,edtPassword;
     String email,password;
+    private TextView mMainTxtAppName;
+    private TextView mMainTxtAppVersion;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,12 +37,33 @@ public class MainActivity extends AppCompatActivity {
         registerButton = findViewById(R.id.bntToRegister);
         edtEmail = findViewById(R.id.edtEmail);
         edtPassword = findViewById(R.id.edtPassword);
+        mMainTxtAppName = findViewById(R.id.mainTxtAppName);
+        mMainTxtAppVersion = findViewById(R.id.mainTxtAppVersion);
+
+        SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+        mMainTxtAppName.setText(preference.getString("appName","default"));
+        mMainTxtAppVersion.setText(preference.getString("appVersion","default"));
     }
 
     public void handleLoginClick(View view) {
         email = edtEmail.getText().toString();
         password = edtPassword.getText().toString();
         doLogin();
+        boolean check;
+        if(email.equals("")){
+            Toast.makeText(this, "Email is Empty!", Toast.LENGTH_SHORT).show();
+            check = false;
+        }
+        else if(password.equals("")){
+            Toast.makeText(this, "Password is Empty!", Toast.LENGTH_SHORT).show();
+            check = false;
+        }
+        else{
+            check = true;
+        }
+        if(check == true){
+            doLogin();
+        }
     }
 
     private void doLogin() {
@@ -49,12 +73,18 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
-                SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-                SharedPreferences.Editor editor = preference.edit();
-                editor.putString("token",response.body().getToken());
-                editor.apply();
-                Intent i = new Intent(getApplicationContext(),ProfileActivity.class);
-                startActivity(i);
+
+                if(response.code() == 302){
+                    Toast.makeText(MainActivity.this,"Login Failed, Wrong Username or Password", Toast.LENGTH_SHORT).show();
+                }
+                else if(response.code() == 200){
+                    SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+                    SharedPreferences.Editor editor = preference.edit();
+                    editor.putString("token",response.body().getToken());
+                    editor.apply();
+                    Intent i = new Intent(getApplicationContext(),ProfileActivity.class);
+                    startActivity(i);
+                }
             }
 
             @Override
@@ -62,5 +92,10 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "Gagal Koneksi", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    public void handleRegisterClick(View view) {
+        Intent i = new Intent(this, RegisterActivity.class);
+        startActivity(i);
     }
 }
