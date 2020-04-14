@@ -53,8 +53,10 @@ public class ProfileActivity extends AppCompatActivity {
     private void getMe() {
         SharedPreferences preference = PreferenceManager.getDefaultSharedPreferences(context);
         Toast.makeText(context, preference.getString("token",null), Toast.LENGTH_SHORT).show();
-        ApiInterface service = ServiceGenerator.createService(ApiInterface.class, "Bearer "+preference.getString("token",null));
-        Call<Envelope<UserInfo>> call = service.me();
+//        ApiInterface service = ServiceGenerator.createService(ApiInterface.class, "Bearer "+preference.getString("token",null));
+//        Call<Envelope<UserInfo>> call = service.me();
+        ApiInterface service = ServiceGenerator.createService(ApiInterface.class);
+        Call<Envelope<UserInfo>> call = service.me("Bearer"+" "+preference.getString("token", null));
         call.enqueue(new Callback<Envelope<UserInfo>>() {
             @Override
             public void onResponse(Call<Envelope<UserInfo>> call, Response<Envelope<UserInfo>> response) {
@@ -79,5 +81,14 @@ public class ProfileActivity extends AppCompatActivity {
     public void handleUpdatePassword(View view) {
         Intent intent = new Intent(this, UpdatePasswordActivity.class);
         startActivityForResult(intent, 2);
+    }
+
+    public void handleRecipe(View view) {
+        Intent intent = new Intent(this, RecipeActivity.class);
+        startActivity(intent);
+    }
+    public void handleUpload(View view) {
+        Intent intent = new Intent(this, UploadActivity.class);
+        startActivity(intent);
     }
 }
